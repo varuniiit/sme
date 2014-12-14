@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.parse.ParseObject;
 
 public class NotificationDetailsActivity extends ActionBarActivity implements
 		OnClickListener {
@@ -21,6 +22,8 @@ public class NotificationDetailsActivity extends ActionBarActivity implements
 	Button accept;
 	String comments = null;
 	EditText editText;
+
+	ParseObject parseObject;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,23 +35,23 @@ public class NotificationDetailsActivity extends ActionBarActivity implements
 		accept = (Button) findViewById(R.id.accept);
 		editText = (EditText) findViewById(R.id.comments);
 		accept.setOnClickListener(this);
-
-		int position = getIntent().getIntExtra("position", -1);
-		System.out.println(position);
-		if (position != -1) {
-
-			try {
-				JSONObject jsonObject = new JSONObject(
-						SimulationJSON.getJsonObject());
-				group.setText(jsonObject.getString("groupname"));
-				time.setText(jsonObject.getString("timetoreport"));
-				location.setText(jsonObject.getString("locationtoreport"));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
+		String data = getIntent().getStringExtra("data");
+		try {
+			JSONObject jsonObject = new JSONObject(data);
+			group.setText(jsonObject.getString("groupname"));
+			time.setText(jsonObject.getString("timetoreport"));
+			location.setText(jsonObject.getString("locationtoreport"));
+			parseObject = new ParseObject("WorkerResponseData");
+			parseObject.put("groupname", jsonObject.getString("groupname"));
+			parseObject.put("timetoreport",
+					jsonObject.getString("timetoreport"));
+			parseObject.put("locationtoreport",
+					jsonObject.getString("locationtoreport"));
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 	}
 
 	@Override
@@ -73,13 +76,12 @@ public class NotificationDetailsActivity extends ActionBarActivity implements
 	@Override
 	public void onClick(View arg0) {
 		// TODO Auto-generated method stub
-		JSONObject jsonObject = new JSONObject();
 		try {
-			jsonObject.put("groupname", group.getText().toString());
-			jsonObject.put("comments", editText.getText().toString().trim());
-			Toast.makeText(this, jsonObject.toString(), Toast.LENGTH_LONG)
-					.show();
-		} catch (JSONException e) {
+			parseObject.put("comments", editText.getText().toString().trim());
+			parseObject.saveInBackground();
+			Toast.makeText(NotificationDetailsActivity.this,
+					"Saved Successfully", Toast.LENGTH_LONG).show();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
