@@ -1,11 +1,11 @@
 package com.shashi.companyworkerspoc;
 
+import android.app.Application;
+
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseUser;
 import com.parse.PushService;
-
-import android.app.Application;
 
 public class GlobalApplication extends Application {
 
@@ -21,5 +21,6 @@ public class GlobalApplication extends Application {
 		ParseACL defaultACL = new ParseACL();
 		defaultACL.setPublicReadAccess(true);
 		ParseACL.setDefaultACL(defaultACL, true);
+
 	}
 }

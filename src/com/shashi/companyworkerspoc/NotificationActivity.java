@@ -1,6 +1,7 @@
 package com.shashi.companyworkerspoc;
 
-import org.json.JSONException;
+import java.util.List;
+
 import org.json.JSONObject;
 
 import android.content.Intent;
@@ -15,13 +16,17 @@ import android.widget.ListView;
 
 import com.parse.ParsePush;
 import com.shashi.companyworkerspoc.adapter.NotificationListAdapter;
+import com.shashi.companyworkerspoc.db.DataBaseHelper;
+import com.shashi.companyworkerspoc.db.NotificationDatabase;
 
 public class NotificationActivity extends ActionBarActivity implements
 		OnItemClickListener {
 
-	public static Boolean inBackground = true;
 	ListView listView;
 	NotificationListAdapter adapter;
+	DataBaseHelper helper;
+	int maxSize = 0;
+	List<NotificationDatabase> Notilist;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,23 +34,17 @@ public class NotificationActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_notification);
 		listView = (ListView) findViewById(R.id.notification);
 		// startActivity(new Intent(this, NotificationDetailsActivity.class));
-		adapter = new NotificationListAdapter(this);
+		helper = new DataBaseHelper(this);
+		Notilist = helper.getAllEntries();
+		for (NotificationDatabase iterable : Notilist) {
+			System.out.println(iterable);
+		}
+		maxSize = Notilist.size();
+		adapter = new NotificationListAdapter(this, Notilist);
 		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(this);
 		ParsePush.subscribeInBackground("Giants");
-		JSONObject data = null;
-		try {
-			data = new JSONObject(
-					"{\"alert\": \"The Mets scored!\",\"badge\": \"Increment\",\"sound\": \"cheering.caf\"}");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		/*
-		 * ParsePush push = new ParsePush(); push.setChannel("Giants");
-		 * push.setData(data); push.sendInBackground();
-		 */
+		helper = new DataBaseHelper(this);
 	}
 
 	@Override
@@ -68,20 +67,18 @@ public class NotificationActivity extends ActionBarActivity implements
 	public void onItemClick(AdapterView<?> arg0, View arg1, int position,
 			long arg3) {
 		// TODO Auto-generated method stub
-		JSONObject jsonObject = null;
+		JSONObject jsonObject = new JSONObject();
 		try {
-			/*
-			 * jsonObject = new JSONObject(SimulationJSON.getJsonObject());
-			 * Intent intent = new Intent(this,
-			 * NotificationDetailsActivity.class); intent.putExtra("groupname",
-			 * jsonObject.getString("groupname"));
-			 * intent.putExtra("timetoreport",
-			 * jsonObject.getString("timetoreport"));
-			 * intent.putExtra("locationtoreport",
-			 * jsonObject.getString("locationtoreport"));
-			 */
+			NotificationDatabase database = Notilist.get((maxSize - 1)
+					- position);
+			jsonObject.put("id", database.getId());
+			jsonObject.put("groupname", database.getGroupName());
+			jsonObject.put("timetoreport", database.getTimeToReport());
+			jsonObject.put("locationtoreport", database.getLocationToReport());
+			jsonObject.put("readstatus", database.getReadStatus());
+			jsonObject.put("comments", database.getComments());
 			Intent intent = new Intent(this, NotificationDetailsActivity.class);
-			intent.putExtra("data", SimulationJSON.getJsonObject());
+			intent.putExtra("data", jsonObject.toString());
 			startActivity(intent);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -89,41 +86,17 @@ public class NotificationActivity extends ActionBarActivity implements
 		}
 
 	}
-
+	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		NotificationActivity.inBackground = false;
-		checkMessage();
+		System.out.println("Resume");
+		Notilist = helper.getAllEntries();
+		adapter.setList(Notilist);
+		//adapter.notifyDataSetChanged();
+		//adapter = new NotificationListAdapter(this, Notilist);
+		listView.setAdapter(adapter);
 	}
 
-	private void checkMessage() {
-		// TODO Auto-generated method stub
-		Intent intent = getIntent();
-		if (intent != null) {
-			Bundle extras = intent.getExtras();
-			if (extras != null) {
-				for (String key : extras.keySet()) {
-					System.out.println(extras.getString(key));
-					// message+= key + "=" + extras.getString(key) + "\n";
-				}
-			}
-		}
-	}
-
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub
-		super.onStop();
-		NotificationActivity.inBackground = true;
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		// TODO Auto-generated method stub
-		super.onNewIntent(intent);
-		setIntent(intent);
-		checkMessage();
-	}
 }

@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.parse.ParseObject;
+import com.shashi.companyworkerspoc.db.DataBaseHelper;
+import com.shashi.companyworkerspoc.db.NotificationDatabase;
 
 public class NotificationDetailsActivity extends ActionBarActivity implements
 		OnClickListener {
@@ -35,12 +37,24 @@ public class NotificationDetailsActivity extends ActionBarActivity implements
 		accept = (Button) findViewById(R.id.accept);
 		editText = (EditText) findViewById(R.id.comments);
 		accept.setOnClickListener(this);
+
 		String data = getIntent().getStringExtra("data");
 		try {
 			JSONObject jsonObject = new JSONObject(data);
-			group.setText(jsonObject.getString("groupname"));
-			time.setText(jsonObject.getString("timetoreport"));
-			location.setText(jsonObject.getString("locationtoreport"));
+			NotificationDatabase database = new NotificationDatabase();
+			database.setGroupName(jsonObject.getString("groupname"));
+			database.setLocationToReport(jsonObject
+					.getString("locationtoreport"));
+			database.setTimeToReport(jsonObject.getString("timetoreport"));
+			database.setReadStatus(jsonObject.getString("readstatus"));
+			database.setComments(jsonObject.getString("comments"));
+			database.setId(Integer.parseInt(jsonObject.getString("id")));
+			System.out.println(database.getId());
+			group.setText(database.getGroupName());
+			time.setText(database.getTimeToReport());
+			location.setText(database.getLocationToReport());
+
+			new DataBaseHelper(this).update(database);
 			parseObject = new ParseObject("WorkerResponseData");
 			parseObject.put("groupname", jsonObject.getString("groupname"));
 			parseObject.put("timetoreport",

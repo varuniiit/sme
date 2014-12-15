@@ -1,7 +1,5 @@
 package com.shashi.companyworkerspoc.receivers;
 
-import java.util.Iterator;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,6 +14,8 @@ import android.widget.Toast;
 import com.parse.ParsePushBroadcastReceiver;
 import com.shashi.companyworkerspoc.NotificationDetailsActivity;
 import com.shashi.companyworkerspoc.R;
+import com.shashi.companyworkerspoc.db.DataBaseHelper;
+import com.shashi.companyworkerspoc.db.NotificationDatabase;
 
 public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 
@@ -23,9 +23,6 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		// TODO Auto-generated method stub
-		// super.onReceive(context, intent);
-		// System.out.println("Broadcast Receiver Push");
 		this.context = context;
 		Toast.makeText(context, "Recived", Toast.LENGTH_LONG).show();
 		System.out.println("Received");
@@ -57,6 +54,15 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 		emptyIntent.putExtra("data", message);
 		try {
 			JSONObject jsonObject = new JSONObject(message);
+			DataBaseHelper baseHelper = new DataBaseHelper(context);
+			NotificationDatabase database = new NotificationDatabase();
+			database.setGroupName(jsonObject.getString("groupname"));
+			database.setLocationToReport(jsonObject
+					.getString("locationtoreport"));
+			database.setTimeToReport(jsonObject.getString("timetoreport"));
+			database.setReadStatus("true");
+			database.setComments("");
+			baseHelper.insert(database);
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, 9,
 					emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
@@ -65,8 +71,8 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 					.setContentTitle("Worker Notification")
 					.setContentText(
 							jsonObject.getString("groupname") + ".\n"
-									+ jsonObject.getString("timetoreport") + ".")
-					.setContentIntent(pendingIntent);
+									+ jsonObject.getString("timetoreport")
+									+ ".").setContentIntent(pendingIntent);
 			mBuilder.setSound(RingtoneManager
 					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 			NotificationManager notificationManager = (NotificationManager) context

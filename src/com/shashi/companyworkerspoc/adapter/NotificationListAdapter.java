@@ -1,30 +1,39 @@
 package com.shashi.companyworkerspoc.adapter;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.shashi.companyworkerspoc.R;
-import com.shashi.companyworkerspoc.SimulationJSON;
+import java.util.List;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.shashi.companyworkerspoc.R;
+import com.shashi.companyworkerspoc.db.NotificationDatabase;
+
 public class NotificationListAdapter extends BaseAdapter {
 
 	Context context;
+	List<NotificationDatabase> notificationDatabases;
+	int maxSize = 0;
 
-	public NotificationListAdapter(Context context) {
+	public void setList(List<NotificationDatabase> notificationDatabases) {
+		this.notificationDatabases = notificationDatabases;
+	}
+
+	public NotificationListAdapter(Context context,
+			List<NotificationDatabase> list) {
 		this.context = context;
+		notificationDatabases = list;
+		maxSize = notificationDatabases.size();
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return 3;
+		return notificationDatabases.size();
 	}
 
 	@Override
@@ -56,18 +65,18 @@ public class NotificationListAdapter extends BaseAdapter {
 		} else {
 			baseItem = (BaseItem) convertView.getTag();
 		}
-		String group="error", time="error";
-		try {
-			JSONObject jsonObject = new JSONObject(
-					SimulationJSON.getJsonObject());
-			group = jsonObject.getString("groupname");
-			time = jsonObject.getString("timetoreport");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		NotificationDatabase database = notificationDatabases.get((maxSize - 1)
+				- position);
+		//System.out.println("read status  " + database.getReadStatus());
+		baseItem.group.setText("Group name: " + database.getGroupName());
+		baseItem.time.setText("Report time:\n" + database.getTimeToReport());
+		if (database.getReadStatus().equals("true")) {
+			baseItem.group.setTypeface(null, Typeface.BOLD);
+			baseItem.time.setTypeface(null, Typeface.BOLD);
+		}else{
+			baseItem.group.setTypeface(null, Typeface.NORMAL);
+			baseItem.time.setTypeface(null, Typeface.NORMAL);
 		}
-		baseItem.group.setText("Group name: " + group);
-		baseItem.time.setText("Report time:\n" + time);
 		return convertView;
 	}
 
