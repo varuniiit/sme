@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -22,17 +23,19 @@ import com.shashi.companyworkerspoc.db.NotificationDatabase;
 public class NotificationActivity extends ActionBarActivity implements
 		OnItemClickListener {
 
-	ListView listView;
-	NotificationListAdapter adapter;
-	DataBaseHelper helper;
+	static ListView listView;
+	static NotificationListAdapter adapter;
+	static DataBaseHelper helper;
 	int maxSize = 0;
-	List<NotificationDatabase> Notilist;
-
+	static List<NotificationDatabase> Notilist;
+	static Context context;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_notification);
+		GlobalApplication.isAppOpend = true;
 		listView = (ListView) findViewById(R.id.notification);
+		context = this;
 		// startActivity(new Intent(this, NotificationDetailsActivity.class));
 		helper = new DataBaseHelper(this);
 		Notilist = helper.getAllEntries();
@@ -41,8 +44,15 @@ public class NotificationActivity extends ActionBarActivity implements
 		}
 		maxSize = Notilist.size();
 		adapter = new NotificationListAdapter(this, Notilist);
-		listView.setAdapter(adapter);
 		listView.setOnItemClickListener(this);
+		if (maxSize != 0) {
+			//adapter = new NotificationListAdapter(this, Notilist);
+			listView.setAdapter(adapter);
+			listView.setOnItemClickListener(this);
+		} else {
+			listView.setVisibility(View.INVISIBLE);
+		}
+
 		ParsePush.subscribeInBackground("Giants");
 		helper = new DataBaseHelper(this);
 	}
@@ -86,17 +96,29 @@ public class NotificationActivity extends ActionBarActivity implements
 		}
 
 	}
-	
+
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
 		System.out.println("Resume");
 		Notilist = helper.getAllEntries();
-		adapter.setList(Notilist);
-		//adapter.notifyDataSetChanged();
-		//adapter = new NotificationListAdapter(this, Notilist);
-		listView.setAdapter(adapter);
+		maxSize = Notilist.size();
+		if (maxSize != 0) {
+			Notilist = helper.getAllEntries();
+			adapter.setList(Notilist);
+			// adapter.notifyDataSetChanged();
+			// adapter = new NotificationListAdapter(this, Notilist);
+			listView.setAdapter(adapter);
+		}
+
 	}
 
+	public static void updateListView() {
+		Notilist = helper.getAllEntries();
+		adapter.setList(Notilist);
+		// adapter.notifyDataSetChanged();
+		// adapter = new NotificationListAdapter(this, Notilist);
+		listView.setAdapter(adapter);
+	}
 }

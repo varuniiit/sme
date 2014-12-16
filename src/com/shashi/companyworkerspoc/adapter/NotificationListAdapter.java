@@ -21,6 +21,7 @@ public class NotificationListAdapter extends BaseAdapter {
 
 	public void setList(List<NotificationDatabase> notificationDatabases) {
 		this.notificationDatabases = notificationDatabases;
+		maxSize = notificationDatabases.size();
 	}
 
 	public NotificationListAdapter(Context context,
@@ -61,21 +62,24 @@ public class NotificationListAdapter extends BaseAdapter {
 					parent, false);
 			baseItem.group = (TextView) convertView.findViewById(R.id.group);
 			baseItem.time = (TextView) convertView.findViewById(R.id.time);
+			baseItem.location = (TextView) convertView
+					.findViewById(R.id.location);
 			convertView.setTag(baseItem);
 		} else {
 			baseItem = (BaseItem) convertView.getTag();
 		}
 		NotificationDatabase database = notificationDatabases.get((maxSize - 1)
 				- position);
-		//System.out.println("read status  " + database.getReadStatus());
-		baseItem.group.setText("Group name: " + database.getGroupName());
-		baseItem.time.setText("Report time:\n" + database.getTimeToReport());
+		// System.out.println("read status  " + database.getReadStatus());
+		baseItem.group.setText(database.getGroupName());
+		baseItem.time.setText(database.getTimeToReport());
+		baseItem.location.setText(database.getLocationToReport());
 		if (database.getReadStatus().equals("true")) {
 			baseItem.group.setTypeface(null, Typeface.BOLD);
 			baseItem.time.setTypeface(null, Typeface.BOLD);
-		}else{
+		} else {
 			baseItem.group.setTypeface(null, Typeface.NORMAL);
-			baseItem.time.setTypeface(null, Typeface.NORMAL);
+			// baseItem.time.setTypeface(null, Typeface.NORMAL);
 		}
 		return convertView;
 	}
@@ -83,6 +87,7 @@ public class NotificationListAdapter extends BaseAdapter {
 	private static class BaseItem {
 		TextView group;
 		TextView time;
+		TextView location;
 	}
 
 }

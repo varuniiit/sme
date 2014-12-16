@@ -9,6 +9,7 @@ import com.parse.PushService;
 
 public class GlobalApplication extends Application {
 
+	public static boolean isAppOpend = false;
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub

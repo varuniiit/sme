@@ -12,6 +12,8 @@ import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.parse.ParsePushBroadcastReceiver;
+import com.shashi.companyworkerspoc.GlobalApplication;
+import com.shashi.companyworkerspoc.NotificationActivity;
 import com.shashi.companyworkerspoc.NotificationDetailsActivity;
 import com.shashi.companyworkerspoc.R;
 import com.shashi.companyworkerspoc.db.DataBaseHelper;
@@ -39,6 +41,9 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 				String data = jsonObject.getString("alert");
 				System.out.println("Data  " + data);
 				showNotification(data);
+				if(GlobalApplication.isAppOpend){
+					NotificationActivity.updateListView();
+				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -51,7 +56,7 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 	private void showNotification(String message) {
 		Intent emptyIntent = new Intent(context,
 				NotificationDetailsActivity.class);
-		emptyIntent.putExtra("data", message);
+		
 		try {
 			JSONObject jsonObject = new JSONObject(message);
 			DataBaseHelper baseHelper = new DataBaseHelper(context);
@@ -63,6 +68,15 @@ public class PushBroadcastReceiver extends ParsePushBroadcastReceiver {
 			database.setReadStatus("true");
 			database.setComments("");
 			baseHelper.insert(database);
+			JSONObject json = new JSONObject();
+			json.put("id", database.getId());
+			json.put("groupname", database.getGroupName());
+			json.put("timetoreport", database.getTimeToReport());
+			json.put("locationtoreport", database.getLocationToReport());
+			json.put("readstatus", database.getReadStatus());
+			json.put("comments", database.getComments());
+			
+			emptyIntent.putExtra("data", json.toString());
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, 9,
 					emptyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 			NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
